@@ -3398,5 +3398,215 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+
+<!-- SENTIERS_PROFILE_IPHONE_FIX -->
+<style id="sentiers-profile-iphone-fix-style">
+  .sentiers-profile-mobile-close{
+    display:none;
+  }
+
+  @media (max-width:700px){
+    body.sentiers-profile-open{
+      overflow:hidden!important;
+      overscroll-behavior:none;
+    }
+
+    body.sentiers-profile-open .map-stage{
+      position:fixed!important;
+      inset:var(--header-height,62px) 0 0 0!important;
+      width:100vw!important;
+      max-width:100vw!important;
+      height:calc(100dvh - var(--header-height,62px))!important;
+      overflow:hidden!important;
+      box-sizing:border-box!important;
+    }
+
+    body.sentiers-profile-open .map-stage>.map-surface{
+      left:0!important;
+      right:0!important;
+      width:100%!important;
+      max-width:100%!important;
+      min-width:0!important;
+      box-sizing:border-box!important;
+    }
+
+    body.sentiers-profile-open .map-stage>.elevation-panel{
+      left:0!important;
+      right:0!important;
+      width:100%!important;
+      max-width:100%!important;
+      min-width:0!important;
+      box-sizing:border-box!important;
+      overflow:hidden!important;
+      padding-bottom:env(safe-area-inset-bottom)!important;
+      transform:none!important;
+    }
+
+    body.sentiers-profile-open .elevation-panel__header{
+      position:relative!important;
+      display:flex!important;
+      align-items:center!important;
+      flex-wrap:nowrap!important;
+      gap:6px!important;
+      width:100%!important;
+      max-width:100%!important;
+      min-width:0!important;
+      box-sizing:border-box!important;
+      overflow:hidden!important;
+      padding:7px calc(58px + env(safe-area-inset-right)) 7px max(8px,env(safe-area-inset-left))!important;
+    }
+
+    body.sentiers-profile-open .elevation-panel__header>*{
+      min-width:0!important;
+      max-width:100%!important;
+    }
+
+    body.sentiers-profile-open .elevation-panel__header h1,
+    body.sentiers-profile-open .elevation-panel__header h2,
+    body.sentiers-profile-open .elevation-panel__header h3,
+    body.sentiers-profile-open .elevation-panel__header strong,
+    body.sentiers-profile-open .elevation-panel__header span{
+      overflow:hidden!important;
+      text-overflow:ellipsis!important;
+      white-space:nowrap!important;
+    }
+
+    body.sentiers-profile-open .elevation-panel__header .sx-elev-controls,
+    body.sentiers-profile-open .elevation-panel__header .sentiers-panel-actions,
+    body.sentiers-profile-open .sentiers-profile-return{
+      display:none!important;
+    }
+
+    body.sentiers-profile-open .elevation-panel__body{
+      width:100%!important;
+      max-width:100%!important;
+      min-width:0!important;
+      height:calc(100% - 50px - env(safe-area-inset-bottom))!important;
+      box-sizing:border-box!important;
+      overflow-x:hidden!important;
+      overflow-y:auto!important;
+      -webkit-overflow-scrolling:touch;
+      padding-left:max(6px,env(safe-area-inset-left))!important;
+      padding-right:max(6px,env(safe-area-inset-right))!important;
+      padding-bottom:max(8px,env(safe-area-inset-bottom))!important;
+    }
+
+    body.sentiers-profile-open .elevation-panel__body>*,
+    body.sentiers-profile-open .elevation-chart,
+    body.sentiers-profile-open .elevation-chart-container,
+    body.sentiers-profile-open .elevation-stats,
+    body.sentiers-profile-open canvas,
+    body.sentiers-profile-open svg{
+      max-width:100%!important;
+      min-width:0!important;
+      box-sizing:border-box!important;
+    }
+
+    body.sentiers-profile-open .elevation-stats{
+      grid-template-columns:repeat(2,minmax(0,1fr))!important;
+      gap:6px!important;
+    }
+
+    .sentiers-profile-mobile-close{
+      position:fixed;
+      top:calc(var(--header-height,62px) + ((100dvh - var(--header-height,62px)) / 2) + 7px);
+      right:max(8px,env(safe-area-inset-right));
+      z-index:99999;
+      width:44px;
+      height:44px;
+      border:1px solid rgba(255,255,255,.38);
+      border-radius:13px;
+      background:#123f36;
+      color:#fff;
+      box-shadow:0 8px 22px rgba(0,0,0,.3);
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      font:700 28px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
+    }
+
+    body.sentiers-profile-open .sentiers-profile-mobile-close{
+      display:flex;
+    }
+
+    .sentiers-profile-mobile-close:active{
+      transform:scale(.96);
+    }
+  }
+
+  @media (max-width:380px){
+    body.sentiers-profile-open .elevation-stats{
+      grid-template-columns:1fr!important;
+    }
+  }
+</style>
+<script id="sentiers-profile-iphone-fix-script">
+(() => {
+  'use strict';
+
+  function closeProfileFromMobile() {
+    const api = window.SENTIERS_V3;
+    if (api && typeof api.closeProfileSplit === 'function') {
+      api.closeProfileSplit();
+    } else {
+      document.body.classList.remove('sentiers-profile-open');
+      const map = window.__SENTIERS_MAP__;
+      setTimeout(() => {
+        try { map?.resize?.(); } catch (_) {}
+      }, 60);
+    }
+  }
+
+  function ensureMobileCloseButton() {
+    let button = document.querySelector('.sentiers-profile-mobile-close');
+    if (button) return button;
+
+    button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'sentiers-profile-mobile-close';
+    button.setAttribute('aria-label', 'Fermer le profil altimétrique et revenir à la carte');
+    button.setAttribute('title', 'Retour à la carte');
+    button.textContent = '×';
+    button.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      closeProfileFromMobile();
+    });
+    document.body.appendChild(button);
+    return button;
+  }
+
+  function refreshProfileLayout() {
+    ensureMobileCloseButton();
+    if (!document.body.classList.contains('sentiers-profile-open')) return;
+    const map = window.__SENTIERS_MAP__;
+    [0, 80, 220].forEach(delay => setTimeout(() => {
+      try { map?.resize?.(); } catch (_) {}
+    }, delay));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', refreshProfileLayout, {once:true});
+  } else {
+    refreshProfileLayout();
+  }
+
+  const bodyObserver = new MutationObserver(records => {
+    if (records.some(record => record.type === 'attributes' && record.attributeName === 'class')) {
+      refreshProfileLayout();
+    }
+  });
+  if (document.body) {
+    bodyObserver.observe(document.body, {attributes:true, attributeFilter:['class']});
+  }
+
+  window.addEventListener('resize', refreshProfileLayout, {passive:true});
+  window.addEventListener('orientationchange', refreshProfileLayout, {passive:true});
+})();
+</script>
+
 </body>
 </html>
